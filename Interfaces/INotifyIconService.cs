@@ -10,5 +10,6 @@ namespace JulyAgent.Interfaces
         event EventHandler? SettingsClicked;
         event EventHandler? ShowClicked;
         event EventHandler? ExitClicked;
+        event EventHandler? ScreenshotGridClicked;
     }
 }

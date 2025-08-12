@@ -16,6 +16,7 @@ namespace JulyAgent.Forms
         private readonly IGeminiService _geminiService;
         private readonly ILogger<MainForm> _logger;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly IScreenshotService _screenshotService;
 
         private TableLayoutPanel _mainLayout;
         private Label _welcomeLabel;
@@ -27,7 +28,8 @@ namespace JulyAgent.Forms
             ISettingsService settingsService,
             IGeminiService geminiService,
             ILogger<MainForm> logger,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            IScreenshotService screenshotService)
         {
             _notifyIconService = notifyIconService;
             _hotkeyService = hotkeyService;
@@ -35,6 +37,7 @@ namespace JulyAgent.Forms
             _geminiService = geminiService;
             _logger = logger;
             _loggerFactory = loggerFactory;
+            _screenshotService = screenshotService;
 
             InitializeComponent();
             InitializeForm();
@@ -136,6 +139,7 @@ namespace JulyAgent.Forms
             _notifyIconService.ShowClicked += OnShowClicked;
             _notifyIconService.ExitClicked += OnExitClicked;
             _notifyIconService.DoubleClick += OnShowClicked;
+            _notifyIconService.ScreenshotGridClicked += OnScreenshotGridClicked;
             this.Load += MainForm_Load;
             this.FormClosing += MainForm_FormClosing;
         }
@@ -236,6 +240,20 @@ namespace JulyAgent.Forms
         private void OnExitClicked(object? sender, EventArgs e)
         {
             Application.Exit();
+        }
+
+        private void OnScreenshotGridClicked(object? sender, EventArgs e)
+        {
+            try
+            {
+                using var grid = new ScreenshotGridForm(_screenshotService);
+                grid.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error opening Screenshot Grid");
+                MessageBox.Show($"Failed to open Screenshot Grid: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void MainForm_FormClosing(object? sender, FormClosingEventArgs e)

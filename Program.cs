@@ -44,6 +44,7 @@ namespace JulyAgent
                     services.AddSingleton<IHotkeyService, HotkeyService>();
                     services.AddSingleton<INotifyIconService, NotifyIconService>();
                     services.AddTransient<IGeminiService, GeminiService>();
+                    services.AddSingleton<IScreenshotService, ScreenshotService>();
 
                     // Register forms
                     services.AddTransient<MainForm>();
@@ -51,6 +52,7 @@ namespace JulyAgent
                     services.AddTransient<ProcessingForm>();
                     services.AddTransient<ResultForm>();
                     services.AddTransient<SettingsForm>();
+                    services.AddTransient<ScreenshotGridForm>();
                 });
         }
     }

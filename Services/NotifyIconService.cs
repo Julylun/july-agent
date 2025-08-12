@@ -19,6 +19,7 @@ namespace JulyAgent.Services
         public event EventHandler? SettingsClicked;
         public event EventHandler? ShowClicked;
         public event EventHandler? ExitClicked;
+        public event EventHandler? ScreenshotGridClicked;
 
         public NotifyIconService(ILogger<NotifyIconService> logger)
         {
@@ -44,6 +45,7 @@ namespace JulyAgent.Services
         {
             _contextMenu = new ContextMenuStrip();
             
+            var screenshotItem = new ToolStripMenuItem("Screenshot Grid", null, OnScreenshotGridClicked);
             var settingsItem = new ToolStripMenuItem("Settings", null, OnSettingsClicked);
             var separator = new ToolStripSeparator();
             var showItem = new ToolStripMenuItem("Show", null, OnShowClicked);
@@ -51,6 +53,7 @@ namespace JulyAgent.Services
 
             _contextMenu.Items.AddRange(new ToolStripItem[]
             {
+                screenshotItem,
                 settingsItem,
                 separator,
                 showItem,
@@ -90,6 +93,11 @@ namespace JulyAgent.Services
         private void OnDoubleClick(object? sender, EventArgs e)
         {
             DoubleClick?.Invoke(this, e);
+        }
+
+        private void OnScreenshotGridClicked(object? sender, EventArgs e)
+        {
+            ScreenshotGridClicked?.Invoke(this, e);
         }
 
         private void OnSettingsClicked(object? sender, EventArgs e)
