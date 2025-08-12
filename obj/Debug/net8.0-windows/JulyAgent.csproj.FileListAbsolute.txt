@@ -42,3 +42,4 @@ D:\2 - Private\Dev\Repositories\JulyAgent\bin\Debug\net8.0-windows\Microsoft.Ext
 D:\2 - Private\Dev\Repositories\JulyAgent\bin\Debug\net8.0-windows\Microsoft.Extensions.Primitives.dll
 D:\2 - Private\Dev\Repositories\JulyAgent\obj\Debug\net8.0-windows\JulyAgent.csproj.AssemblyReference.cache
 D:\2 - Private\Dev\Repositories\JulyAgent\obj\Debug\net8.0-windows\JulyAgent.csproj.Up2Date
+D:\2 - Private\Dev\Repositories\JulyAgent\obj\Debug\net8.0-windows\JulyAgent.sourcelink.json

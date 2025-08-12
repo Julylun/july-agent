@@ -5,6 +5,8 @@ using Microsoft.Extensions.Logging;
 using JulyAgent.Constants;
 using JulyAgent.Interfaces;
 using JulyAgent.Models;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace JulyAgent.Services
 {
@@ -49,7 +51,10 @@ namespace JulyAgent.Services
                     throw new InvalidOperationException("API key not configured");
                 }
 
-                var request = CreateRequest(prompt, model);
+                var systemPrompt = await _settingsService.GetPromptAsync();
+                var fullPrompt = $"{systemPrompt}\n\nUser request: {prompt}";
+
+                var request = CreateRequest(fullPrompt, model);
                 var json = JsonSerializer.Serialize(request);
                 var content = new StringContent(json, Encoding.UTF8, ApiConstants.ContentTypeHeader);
 
@@ -121,17 +126,48 @@ namespace JulyAgent.Services
         {
             if (response?.Candidates == null || response.Candidates.Length == 0)
             {
+                // Try to hint safety issues if any
+                var safety = response?.PromptFeedback?.SafetyRatings;
+                if (safety != null && safety.Length > 0)
+                {
+                    var categories = string.Join(", ", safety.Select(s => $"{s.Category}:{s.Probability}"));
+                    return $"No candidates returned. Safety feedback: {categories}";
+                }
                 return "No response generated";
             }
 
-            var firstCandidate = response.Candidates[0];
-            if (firstCandidate?.Content?.Parts == null || firstCandidate.Content.Parts.Length == 0)
+            var allTexts = new List<string>();
+            foreach (var candidate in response.Candidates)
             {
-                return "Response received but no content found";
+                var parts = candidate?.Content?.Parts;
+                if (parts != null && parts.Length > 0)
+                {
+                    foreach (var part in parts)
+                    {
+                        if (!string.IsNullOrWhiteSpace(part?.Text))
+                        {
+                            allTexts.Add(part!.Text!);
+                        }
+                    }
+                }
             }
 
-            var firstPart = firstCandidate.Content.Parts[0];
-            return firstPart?.Text ?? "No text content found";
+            if (allTexts.Count > 0)
+            {
+                return string.Join("\n\n", allTexts);
+            }
+
+            // No text parts found; include finish reason and safety info to help diagnose
+            var first = response.Candidates[0];
+            var finish = string.IsNullOrWhiteSpace(first?.FinishReason) ? "UNKNOWN" : first!.FinishReason!;
+            var candidateSafety = first?.SafetyRatings != null && first.SafetyRatings.Length > 0
+                ? string.Join(", ", first.SafetyRatings.Select(s => $"{s.Category}:{s.Probability}"))
+                : "none";
+            var promptSafety = response.PromptFeedback?.SafetyRatings != null && response.PromptFeedback.SafetyRatings.Length > 0
+                ? string.Join(", ", response.PromptFeedback.SafetyRatings.Select(s => $"{s.Category}:{s.Probability}"))
+                : "none";
+
+            return $"Response received but no content found (finishReason={finish}, candidateSafety=[{candidateSafety}], promptSafety=[{promptSafety}]).";
         }
     }
 }

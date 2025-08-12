@@ -11,6 +11,8 @@ namespace JulyAgent.Forms
         private Button _copyButton;
         private Button _closeButton;
         private Label _titleLabel;
+        private TableLayoutPanel _mainLayout;
+        private FlowLayoutPanel _buttonPanel;
 
         public ResultForm(string result)
         {
@@ -25,31 +27,56 @@ namespace JulyAgent.Forms
 
             // Form properties
             this.Text = "Gemini Response";
-            this.Size = new Size(600, 500);
+            this.Size = new Size(700, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.Sizable;
-            this.MinimumSize = new Size(500, 400);
+            this.MinimumSize = new Size(600, 500);
+            this.Padding = new Padding(20);
+
+            // Main layout panel
+            _mainLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 4,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink
+            };
+
+            // Configure rows
+            _mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40)); // Title row
+            _mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20)); // Spacing
+            _mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // Content row (fill remaining space)
+            _mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 50)); // Button row
 
             // Title Label
             _titleLabel = new Label
             {
                 Text = "Response from Gemini:",
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                Location = new Point(20, 20),
-                Size = new Size(300, 25),
-                TextAlign = ContentAlignment.MiddleLeft
+                TextAlign = ContentAlignment.MiddleLeft,
+                Dock = DockStyle.Fill,
+                AutoSize = false
             };
 
             // Result RichTextBox
             _resultTextBox = new RichTextBox
             {
                 Font = new Font("Consolas", 10),
-                Location = new Point(20, 55),
-                Size = new Size(540, 350),
                 BorderStyle = BorderStyle.FixedSingle,
                 ReadOnly = true,
                 ScrollBars = RichTextBoxScrollBars.Vertical,
-                WordWrap = true
+                WordWrap = true,
+                Dock = DockStyle.Fill
+            };
+
+            // Button panel
+            _buttonPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.RightToLeft,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink
             };
 
             // Copy Button
@@ -57,7 +84,6 @@ namespace JulyAgent.Forms
             {
                 Text = "Copy to Clipboard",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                Location = new Point(350, 420),
                 Size = new Size(150, 35),
                 Cursor = Cursors.Hand
             };
@@ -68,20 +94,23 @@ namespace JulyAgent.Forms
             {
                 Text = "Close",
                 Font = new Font("Segoe UI", 10),
-                Location = new Point(510, 420),
                 Size = new Size(80, 35),
                 Cursor = Cursors.Hand
             };
             _closeButton.Click += CloseButton_Click;
 
-            // Add controls to form
-            this.Controls.AddRange(new Control[]
-            {
-                _titleLabel,
-                _resultTextBox,
-                _copyButton,
-                _closeButton
-            });
+            // Add buttons to button panel
+            _buttonPanel.Controls.Add(_closeButton);
+            _buttonPanel.Controls.Add(_copyButton);
+
+            // Add controls to main layout
+            _mainLayout.Controls.Add(_titleLabel, 0, 0);
+            _mainLayout.Controls.Add(new Label { Text = "" }, 0, 1); // Spacing
+            _mainLayout.Controls.Add(_resultTextBox, 0, 2);
+            _mainLayout.Controls.Add(_buttonPanel, 0, 3);
+
+            // Add main layout to form
+            this.Controls.Add(_mainLayout);
 
             // Set default button
             this.AcceptButton = _closeButton;

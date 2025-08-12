@@ -98,6 +98,12 @@ namespace JulyAgent.Services
             return settings.AutoStart;
         }
 
+        public async Task<string> GetPromptAsync()
+        {
+            var settings = await LoadSettingsAsync();
+            return settings.Prompt ?? "You are a helpful AI assistant. Please provide clear, accurate, and helpful responses to the user's questions and requests.";
+        }
+
         public async Task UpdateApiKeyAsync(string apiKey)
         {
             var settings = await LoadSettingsAsync();
@@ -130,6 +136,13 @@ namespace JulyAgent.Services
         {
             var settings = await LoadSettingsAsync();
             settings.AutoStart = autoStart;
+            await SaveSettingsAsync(settings);
+        }
+
+        public async Task UpdatePromptAsync(string prompt)
+        {
+            var settings = await LoadSettingsAsync();
+            settings.Prompt = prompt;
             await SaveSettingsAsync(settings);
         }
 

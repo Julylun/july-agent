@@ -17,6 +17,10 @@ namespace JulyAgent.Forms
         private readonly ILogger<MainForm> _logger;
         private readonly ILoggerFactory _loggerFactory;
 
+        private TableLayoutPanel _mainLayout;
+        private Label _welcomeLabel;
+        private Label _statusLabel;
+
         public MainForm(
             INotifyIconService notifyIconService,
             IHotkeyService hotkeyService,
@@ -50,6 +54,50 @@ namespace JulyAgent.Forms
             this.MinimizeBox = false;
             this.ShowInTaskbar = false;
             this.WindowState = FormWindowState.Minimized;
+            this.Padding = new Padding(20);
+
+            // Main layout panel
+            _mainLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink
+            };
+
+            // Configure rows
+            _mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 80)); // Welcome row
+            _mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20)); // Spacing
+            _mainLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100)); // Status row (fill remaining space)
+
+            // Welcome Label
+            _welcomeLabel = new Label
+            {
+                Text = $"Welcome to {AppConstants.AppName}!\n\nPress {AppConstants.DefaultHotkey} to start using Gemini AI",
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Dock = DockStyle.Fill,
+                AutoSize = false
+            };
+
+            // Status Label
+            _statusLabel = new Label
+            {
+                Text = "Application is running in the background.\nCheck system tray for more options.",
+                Font = new Font("Segoe UI", 11),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Dock = DockStyle.Fill,
+                AutoSize = false
+            };
+
+            // Add controls to main layout
+            _mainLayout.Controls.Add(_welcomeLabel, 0, 0);
+            _mainLayout.Controls.Add(new Label { Text = "" }, 0, 1); // Spacing
+            _mainLayout.Controls.Add(_statusLabel, 0, 2);
+
+            // Add main layout to form
+            this.Controls.Add(_mainLayout);
             
             this.ResumeLayout(false);
         }
@@ -118,43 +166,6 @@ namespace JulyAgent.Forms
             }
         }
 
-        private async void OnSettingsClicked(object? sender, EventArgs e)
-        {
-            try
-            {
-                using var settingsForm = new SettingsForm(_settingsService, _loggerFactory.CreateLogger<SettingsForm>());
-                if (settingsForm.ShowDialog() == DialogResult.OK)
-                {
-                    // Reload settings and reapply theme
-                    var settings = await _settingsService.LoadSettingsAsync();
-                    ThemeManager.ApplyTheme(this, settings.Theme);
-                    
-                    // Re-register hotkey if changed
-                    _hotkeyService.UnregisterHotkey();
-                    if (!_hotkeyService.RegisterHotkey(settings.Hotkey))
-                    {
-                        _logger.LogWarning("Failed to register hotkey: {Hotkey}", settings.Hotkey);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error showing settings form");
-            }
-        }
-
-        private void OnShowClicked(object? sender, EventArgs e)
-        {
-            this.Show();
-            this.WindowState = FormWindowState.Normal;
-            this.Activate();
-        }
-
-        private void OnExitClicked(object? sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
         private async Task ProcessTextWithGeminiAsync(string text)
         {
             try
@@ -185,6 +196,46 @@ namespace JulyAgent.Forms
                 MessageBox.Show($"Error processing with Gemini: {ex.Message}", "Error", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private async void OnSettingsClicked(object? sender, EventArgs e)
+        {
+            try
+            {
+                using var settingsForm = new SettingsForm(_settingsService, _loggerFactory.CreateLogger<SettingsForm>());
+                if (settingsForm.ShowDialog() == DialogResult.OK)
+                {
+                    // Reload settings and reapply theme
+                    var settings = await _settingsService.LoadSettingsAsync();
+                    ThemeManager.ApplyTheme(this, settings.Theme);
+                    
+                    // Re-register hotkey if changed
+                    _hotkeyService.UnregisterHotkey();
+                    if (!_hotkeyService.RegisterHotkey(settings.Hotkey))
+                    {
+                        _logger.LogWarning("Failed to register hotkey: {Hotkey}", settings.Hotkey);
+                    }
+
+                    _logger.LogInformation("Settings updated - API Key: {HasApiKey}, Model: {Model}, Prompt: {PromptLength} chars", 
+                        !string.IsNullOrEmpty(settings.ApiKey), settings.Model, settings.Prompt?.Length ?? 0);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error showing settings form");
+            }
+        }
+
+        private void OnShowClicked(object? sender, EventArgs e)
+        {
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+            this.Activate();
+        }
+
+        private void OnExitClicked(object? sender, EventArgs e)
+        {
+            Application.Exit();
         }
 
         private void MainForm_FormClosing(object? sender, FormClosingEventArgs e)

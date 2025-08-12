@@ -42,5 +42,15 @@ namespace JulyAgent.Constants
             "gemini-1.0-pro",
             "gemini-1.0-pro-vision"
         };
+
+        // Sample Prompts
+        public static readonly string[] SamplePrompts = {
+            "You are a helpful AI assistant. Please provide clear, accurate, and helpful responses to the user's questions and requests.",
+            "You are a coding expert. Provide detailed, well-structured code examples and explanations. Use best practices and include comments where helpful.",
+            "You are a writing assistant. Help users improve their writing with suggestions for clarity, grammar, style, and structure.",
+            "You are a language tutor. Help users learn and practice languages with explanations, examples, and corrections.",
+            "You are a creative writing coach. Inspire and guide users in developing stories, characters, and creative content.",
+            "You are a technical consultant. Provide clear, practical advice on technical problems and solutions."
+        };
     }
 }

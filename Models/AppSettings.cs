@@ -18,5 +18,8 @@ namespace JulyAgent.Models
 
         [JsonPropertyName("autoStart")]
         public bool AutoStart { get; set; } = false;
+
+        [JsonPropertyName("prompt")]
+        public string Prompt { get; set; } = "You are a helpful AI assistant. Please provide clear, accurate, and helpful responses to the user's questions and requests.";
     }
 }
